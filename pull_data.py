@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 
 def get_raw(league_id, season, week, swid, espn_long):
     url = 'https://fantasy.espn.com/apis/v3/games/ffl/seasons/{}/segments/0/leagues/{}?view=mMatchup&view=mMatchupScore'.format(str(season), str(league_id))
@@ -24,7 +25,7 @@ def get_teamnames(league_id, season, week, swid, espn_long):
 
     return team_names
 
-#this feels like a really hacky implemetation im not happy with this :( note to sober be fix this
+#this feels like a really hacky implemetation im not happy with this :( note to sober pud fix this
 def process_teams(teams):
     list_of_teams = []
 
@@ -114,25 +115,26 @@ def main():
         #no cached file found? Do things...
         print("You need a creds file!!! Lets make that for next time. \nConsult README.md for what these are and the formats")
         league_id = input("League ID: ")
-        positions = input('''Input your positions (default: '['QB', 'RB', 'WR', 'Flex', 'TE', 'D/ST', 'K']'): ''')
-        structure = input('''Input your sturcture (default '[1, 2, 2, 1, 1, 1, 1]'): ''')
         swid = input("SWID: ")
         espn_long = input("ESPN_long: ")
         
         creds = {
             'league_id': league_id,
-            'positions': positions,
-            'structure': structure,
             'swid': swid,
             'espn_long': espn_long
         }
         
+        print("\n\nWriting cached_creds.json make sure you double check README.md to make sure defaults match your use case\n\n")
+
         with open('cached_creds.json', 'w') as j:
             json.dump(creds, j)
     
     #More essential info
     season = int(input("Season (year eg. 2020): "))
     week = int(input("Week (number eg. 11): "))
+
+    raw_process = []
+    raw_return = []
 
     for i in range(1, week+1):
         week = i
@@ -141,7 +143,17 @@ def main():
         teams = process_teams(team_names)
         #another hacky implement that i wanna fix this later
         process_results = data_process(raw_pull, teams, week, pos_codes)
+        raw_process.append(process_results)
 
+#this is mega hacky but it works so ¯\_(ツ)_/¯
+    for i in raw_process:
+        for k in i:
+            raw_return.append(k)
+
+    filename = str(time.time()).split('.')[0]
+
+    with open('{}.json'.format(filename), 'w') as j:
+        j.write(json.dumps(raw_return))
 
 
 main()
