@@ -113,7 +113,7 @@ def main():
             creds = json.load(j)
     except:
         #no cached file found? Do things...
-        print("You need a creds file!!! Lets make that for next time. \nConsult README.md for what these are and the formats")
+        print("\033[93mYou need a creds file!!! Lets make that for next time. \nConsult README.md for what these are and the formats \033[0m")
         league_id = input("League ID: ")
         swid = input("SWID: ")
         espn_long = input("ESPN_long: ")
@@ -124,7 +124,7 @@ def main():
             'espn_long': espn_long
         }
         
-        print("\n\nWriting cached_creds.json make sure you double check README.md to make sure defaults match your use case\n\n")
+        print("\n\033[95mWriting cached_creds.json make sure you double check README.md to make sure defaults match your use case\033[0m\n\n")
 
         with open('cached_creds.json', 'w') as j:
             json.dump(creds, j)
