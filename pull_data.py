@@ -33,6 +33,61 @@ def process_teams(teams):
     
     return list_of_teams
 
+#another hacky bit of code gotta clean this later
+def data_process(raw, teams, week, pos_codes):
+    raw_data = []
+    index = 0
+    
+    for team in raw['teams']:
+        players = []
+        for p in team['roster']['entries']:
+            name = p['playerPoolEntry']['player']['fullName']
+
+            slotid = p['lineupSlotId']
+            slot = pos_codes[slotid]
+
+            act, proj = 0, 0
+            for stat in p['playerPoolEntry']['player']['stats']:
+                if stat['scoringPeriodId'] != week:
+                    continue
+                if stat['statSourceId'] == 0:
+                    act = stat['appliedTotal']
+                elif stat['statSourceId'] == 1:
+                    proj = stat['appliedTotal']
+                else:
+                    print('something happend idek, seek help from a higher power')
+
+            pos = 'Unk'
+            ess = p['playerPoolEntry']['player']['eligibleSlots']
+            if 0 in ess: pos = 'QB'
+            elif 2 in ess: pos = 'RB'
+            elif 4 in ess: pos = 'WR'
+            elif 6 in ess: pos = 'TE'
+            elif 16 in ess: pos = 'D/ST'
+            elif 17 in ess: pos = 'K'
+
+            player_stats = {
+                'name': name,
+                'slotid': slotid,
+                'slot': slot,
+                'pos': pos,
+                'act': act,
+                'proj': proj
+            }
+
+            players.append(player_stats)
+        
+        team_name=teams[index]
+        
+        for i in players:
+            i['team_name'] = team_name
+            i['team_id'] = index
+            i['week'] = week
+            raw_data.append(i)
+
+        index = index + 1
+
+    return raw_data
 
 def main():
     #this is hard coding the defaults change them here or in the creds setup further down
@@ -84,8 +139,8 @@ def main():
         raw_pull = get_raw(creds['league_id'], season, week, creds['swid'], creds['espn_long'])
         team_names = get_teamnames(creds['league_id'], season, week, creds['swid'], creds['espn_long'])
         teams = process_teams(team_names)
-    
-    print(teams)
+        #another hacky implement that i wanna fix this later
+        process_results = data_process(raw_pull, teams, week, pos_codes)
 
 
 
