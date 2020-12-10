@@ -1,6 +1,30 @@
 import requests
 import json
 
+def get_raw(league_id, season, week, swid, espn_long):
+    url = 'https://fantasy.espn.com/apis/v3/games/ffl/seasons/{}/segments/0/leagues/{}?view=mMatchup&view=mMatchupScore'.format(str(season), str(league_id))
+    raw = requests.get(
+        url, 
+        params={'scoringPeriodId': week, 'matchupPeriodId': week}, 
+        cookies={"SWID": swid, "espn_s2": espn_long}
+    )
+
+    return raw.json()
+
+def get_teamnames(league_id, season, week, swid, espn_long):
+    url = 'https://fantasy.espn.com/apis/v3/games/ffl/seasons/{}/segments/0/leagues/{}?view=mTeam'.format(str(season), str(league_id))
+    
+    raw = requests.get(
+        url,
+        params={'scoringPeriodId': week},
+        cookies={"SWID": swid, "espn_s2": espn_long}
+    ).json()
+
+
+    team_names = {tm['id']: tm['location'].strip() + ' ' + tm['nickname'].strip() for tm in raw['teams']}
+
+    return team_names
+
 def main():
     #this is hard coding the position codes, used for creating the lineups
     pos_codes = {
